@@ -1,211 +1,478 @@
-# Kubrix IDP - Complete Platform Solution
+# Kubrix Internal Developer Platform (IDP) on k3s
 
-This repository contains the setup for Kubrix, a comprehensive Internal Developer Platform (IDP) that provides a complete, integrated solution for Kubernetes-based development.
+A complete GitOps-based Internal Developer Platform running on k3s, featuring ArgoCD, Backstage, Grafana, and more.
 
-## 🚀 Overview
+## 📋 Table of Contents
 
-Kubrix is an out-of-the-box IDP that integrates:
-- **Argo CD** - GitOps continuous delivery
-- **Backstage** - Developer portal
-- **Keycloak** - Identity and access management  
-- **Kargo** - Multi-stage application promotion
-- **Vault** - Secrets management
-- **Crossplane** - Infrastructure as code
-- **External Secrets Operator** - Secrets synchronization
-- **Prometheus & Grafana** - Monitoring and observability
-- **Cert Manager** - Certificate management
-- **NGINX Ingress** - Ingress controller
-- **And more...**
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [Detailed Installation](#detailed-installation)
+- [Accessing Services](#accessing-services)
+- [Configuration](#configuration)
+- [Troubleshooting](#troubleshooting)
+- [Managing Applications](#managing-applications)
+- [Development Guide](#development-guide)
+- [Backup and Recovery](#backup-and-recovery)
+- [Known Issues](#known-issues)
+- [Contributing](#contributing)
 
-## 📋 Prerequisites
+## 🎯 Overview
 
-1. **K3s Cluster**: 
-   - Minimum: 8 CPU cores, 16GB RAM
-   - Access via `kubectl` configured
+Kubrix is a comprehensive Internal Developer Platform (IDP) that provides:
 
-2. **GitHub Setup**:
-   - GitHub account with organization (or personal)
-   - Personal Access Token (PAT) with `repo` permissions
-   - Two empty repositories:
-     - Platform configuration repo (e.g., `kubrix-platform`)
-     - Demo applications repo (e.g., `kubrix-demo-apps`)
+- **GitOps Deployment**: ArgoCD for continuous deployment
+- **Developer Portal**: Backstage for service catalog and documentation
+- **Monitoring**: Grafana and Prometheus for observability
+- **Security**: Keycloak for SSO, Vault for secrets management
+- **Progressive Delivery**: Kargo for multi-stage deployments
+- **Policy Management**: Kyverno for Kubernetes policies
+- **Certificate Management**: cert-manager for TLS certificates
 
-3. **Local Tools**:
-   - `kubectl` installed and configured
-   - `git` for repository operations
-   - `helm` (optional, for manual operations)
+### Key Features
 
-## 🛠️ Installation Steps
+- 🚀 **One-click deployment** using GitOps principles
+- 🔄 **Automated sync** of applications from Git repositories
+- 📊 **Built-in monitoring** and observability
+- 🔐 **Enterprise-grade security** with SSO and secrets management
+- 🎯 **Developer-friendly** portal for service discovery
+- 📦 **Pre-configured applications** with best practices
 
-### 1. Backup Existing Setup (if applicable)
-If you have an existing Backstage/Coder installation:
+## 🏗️ Architecture
+
+```mermaid
+graph TB
+    subgraph "k3s Cluster"
+        subgraph "Core Platform"
+            ArgoCD[ArgoCD<br/>GitOps Engine]
+            Ingress[NGINX Ingress<br/>Controller]
+        end
+        
+        subgraph "Developer Experience"
+            Backstage[Backstage<br/>Developer Portal]
+            Kargo[Kargo<br/>Progressive Delivery]
+        end
+        
+        subgraph "Observability"
+            Grafana[Grafana<br/>Dashboards]
+            Prometheus[Prometheus<br/>Metrics]
+            Loki[Loki<br/>Logs]
+        end
+        
+        subgraph "Security & Governance"
+            Keycloak[Keycloak<br/>SSO]
+            Vault[Vault<br/>Secrets]
+            Kyverno[Kyverno<br/>Policies]
+        end
+    end
+    
+    subgraph "External"
+        GitHub[GitHub<br/>Repositories]
+        Developer[Developer<br/>Workstation]
+    end
+    
+    Developer --> Ingress
+    ArgoCD --> GitHub
+    Backstage --> ArgoCD
+```
+
+### Component Stack
+
+| Component | Purpose | Version | Status |
+|-----------|---------|---------|--------|
+| ArgoCD | GitOps continuous deployment | v2.8.4 | ✅ Active |
+| Backstage | Developer portal | Latest | ⚠️ Requires config |
+| Grafana | Monitoring dashboards | Latest | ✅ Active |
+| Keycloak | Single Sign-On (SSO) | Latest | 🔄 Deploying |
+| Vault | Secrets management | Latest | 🔄 Deploying |
+| Kargo | Progressive delivery | Latest | 🔄 Deploying |
+| Prometheus | Metrics collection | Latest | ⚠️ CRDs only |
+| Loki | Log aggregation | Latest | 🔄 Deploying |
+| cert-manager | Certificate management | Latest | ✅ Active |
+| Kyverno | Policy engine | Latest | ✅ Active |
+
+## 📚 Prerequisites
+
+### System Requirements
+
+- **k3s cluster**: Running on Ubuntu VM (tested with UTM on macOS)
+- **kubectl**: Configured to access your k3s cluster
+- **GitHub account**: For repository storage
+- **macOS/Linux**: Local development machine
+
+### Required Tools
+
 ```bash
-./scripts/backup-existing-setup.sh
+# Check if tools are installed
+make check-prerequisites
+
+# Or install manually
+brew install kubectl helm yq gomplate
 ```
 
-### 2. Clean Existing Installation
-Remove any existing platform components:
+### k3s VM Configuration
+
+- **VM IP**: 192.168.64.4 (adjust in Makefile if different)
+- **Ports**: 6443 (API), 80/443 (HTTP/HTTPS), 30000-32767 (NodePorts)
+- **Firewall**: Allow traffic from your Mac to VM
+
 ```bash
-./scripts/cleanup-existing-setup.sh
+# On Ubuntu VM, open required ports
+sudo ufw allow 6443/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw allow 30000:32767/tcp
 ```
 
-### 3. Configure Environment
+## 🚀 Quick Start
+
 ```bash
-# Copy and edit environment file
-cp .env.example .env
+# 1. Clone this repository
+git clone https://github.com/petmar2017/kubrix.git
+cd kubrix
 
-# Edit .env with your values:
-# - KUBRIX_CUSTOMER_REPO (your GitHub platform repo)
-# - KUBRIX_CUSTOMER_REPO_TOKEN (your GitHub PAT)
-# - Keep other defaults for local setup
+# 2. Install Kubrix
+make install
 
-# Source the environment
-source .env
+# 3. Start port forwarding
+make port-forward
+
+# 4. Check status
+make status
+
+# 5. Access ArgoCD
+open http://localhost:8080
+# Username: admin
+# Password: aFsfe93a-OgZSpby
 ```
 
-### 4. Update DNS
-Add to `/etc/hosts` (for local development):
-```
-127.0.0.1 argocd.kubrix.local
-127.0.0.1 backstage.kubrix.local
-127.0.0.1 keycloak.kubrix.local
-127.0.0.1 kargo.kubrix.local
-127.0.0.1 vault.kubrix.local
-127.0.0.1 grafana.kubrix.local
-127.0.0.1 prometheus.kubrix.local
-```
+## 📖 Detailed Installation
 
-### 5. Run Bootstrap
+### Step 1: Environment Setup
+
+Create a `.env` file with your configuration:
+
 ```bash
+cat > .env << EOF
+KUBRIX_CUSTOMER_REPO=https://github.com/petmar2017/kubrix-platform
+KUBRIX_CUSTOMER_REPO_TOKEN=<your-github-token>
+KUBRIX_CUSTOMER_TARGET_TYPE=DEMO-STACK
+KUBRIX_CUSTOMER_DNS_PROVIDER=local
+KUBRIX_CUSTOMER_DOMAIN=kubrix.local
+EOF
+```
+
+### Step 2: Update Hosts File
+
+Add Kubrix domains to `/etc/hosts`:
+
+```bash
+sudo make fix-hosts
+
+# Or manually add:
+# 192.168.64.4 argocd.kubrix.local
+# 192.168.64.4 backstage.kubrix.local
+# 192.168.64.4 keycloak.kubrix.local
+# 192.168.64.4 kargo.kubrix.local
+# 192.168.64.4 vault.kubrix.local
+# 192.168.64.4 grafana.kubrix.local
+# 192.168.64.4 prometheus.kubrix.local
+```
+
+### Step 3: Bootstrap Kubrix
+
+```bash
+# Run the bootstrap script
 ./scripts/bootstrap-kubrix.sh
+
+# Or use make
+make bootstrap
 ```
 
-This process takes 20-30 minutes and will:
-- Create all necessary namespaces
-- Deploy Argo CD
-- Set up the App of Apps pattern
-- Deploy all platform components
-- Configure integrations
+### Step 4: Install Missing CRDs (k3s specific)
 
-## 📊 Architecture
-
-Kubrix uses the **App of Apps** pattern with Argo CD as the orchestrator:
-
-```
-Argo CD (GitOps Engine)
-    ├── Platform Apps
-    │   ├── Backstage (Developer Portal)
-    │   ├── Keycloak (SSO)
-    │   ├── Kargo (Progressive Delivery)
-    │   ├── Vault (Secrets)
-    │   ├── Monitoring Stack
-    │   └── Infrastructure Components
-    └── Team Apps
-        ├── Team Onboarding
-        ├── Application Templates
-        └── Multi-stage Deployments
-```
-
-## 🔑 Access Points
-
-After installation, access your IDP services:
-
-| Service | URL | Purpose |
-|---------|-----|---------|
-| Backstage | https://backstage.kubrix.local | Developer Portal |
-| Argo CD | https://argocd.kubrix.local | GitOps Management |
-| Keycloak | https://keycloak.kubrix.local | Identity Provider |
-| Kargo | https://kargo.kubrix.local | Progressive Delivery |
-| Vault | https://vault.kubrix.local | Secrets Management |
-| Grafana | https://grafana.kubrix.local | Metrics Dashboard |
-| Prometheus | https://prometheus.kubrix.local | Metrics Collection |
-
-Credentials are saved to `credentials.txt` after installation.
-
-## 🎯 Key Features
-
-### Team Onboarding
-- Self-service team creation via Backstage
-- Automated namespace and RBAC setup
-- GitOps repository scaffolding
-
-### Application Deployment
-- Multi-stage promotion (test → qa → prod)
-- GitOps-based deployments
-- Automated rollback capabilities
-
-### Security & Compliance
-- SSO via Keycloak
-- Secrets management with Vault
-- Policy enforcement with Kyverno
-- Certificate automation
-
-### Observability
-- Full metrics stack with Prometheus
-- Pre-configured Grafana dashboards
-- Application and infrastructure monitoring
-
-## 🧰 Common Operations
-
-### Monitor Installation
 ```bash
-# Watch pod creation
-kubectl get pods -A -w
+# Install monitoring CRDs that k8s-monitoring requires
+make dev-monitoring-crds
+```
 
-# Check Argo CD apps
+## 🌐 Accessing Services
+
+### Port Forwarding (Recommended)
+
+```bash
+# Start all port forwards
+make port-forward
+
+# Access services
+# ArgoCD:  http://localhost:8080
+# Grafana: http://localhost:3000
+# Ingress: http://localhost:8880
+```
+
+### Direct Access via NodePort
+
+```bash
+# Access through NodePort 30404
+curl -H "Host: argocd.kubrix.local" http://192.168.64.4:30404
+curl -H "Host: grafana.kubrix.local" http://192.168.64.4:30404
+```
+
+### Using the Helper Script
+
+```bash
+# Quick access helper
+./kubrix-access.sh open argocd   # Opens ArgoCD in browser
+./kubrix-access.sh open grafana  # Opens Grafana in browser
+./kubrix-access.sh status        # Check port-forward status
+./kubrix-access.sh restart       # Restart all port-forwards
+```
+
+### Service Credentials
+
+| Service | Username | Password | URL |
+|---------|----------|----------|-----|
+| ArgoCD | admin | aFsfe93a-OgZSpby | http://localhost:8080 |
+| Grafana | admin | (check pod logs) | http://localhost:3000 |
+| Keycloak | admin | (when deployed) | http://localhost:8081 |
+
+## ⚙️ Configuration
+
+### ArgoCD Applications
+
+All applications are managed through ArgoCD. To view:
+
+```bash
+# List all applications
 kubectl get applications -n argocd
 
-# View logs
-kubectl logs -n argocd deployment/argocd-server
+# Check application status
+kubectl describe application <app-name> -n argocd
+
+# Force sync an application
+kubectl patch application <app-name> -n argocd --type merge \
+  -p '{"operation":{"sync":{"revision":"main"}}}'
 ```
 
-### Team Onboarding
-1. Access Backstage at https://backstage.kubrix.local
-2. Navigate to "Create" → "Team Onboarding"
-3. Fill in team details
-4. Submit to create team resources
+### Adding New Applications
 
-### Deploy Application
-1. Create application in team's Git repository
-2. Use Kargo to promote through stages
-3. Monitor in Argo CD
+1. Create application manifest in `platform-apps/`
+2. Commit to your platform repository
+3. ArgoCD will automatically detect and deploy
 
-## 🐛 Troubleshooting
+### Customizing Values
 
-### Pods Not Starting
+Edit the appropriate `values-*.yaml` files in your platform repository:
+- `values-demo-stack.yaml`: Demo environment settings
+- `values-production.yaml`: Production settings
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### 1. k3s Connection Issues
+
 ```bash
-# Check resource usage
-kubectl top nodes
-kubectl describe node
+# Check connectivity
+kubectl get nodes
 
-# Check failed pods
-kubectl get pods -A | grep -v Running
+# If failed, check:
+# - VM is running
+# - Firewall allows port 6443
+# - KUBECONFIG is correct
 ```
 
-### DNS Issues
-- Verify /etc/hosts entries
-- Use port-forward for testing:
-  ```bash
-  kubectl port-forward -n argocd svc/argocd-server 8080:80
-  ```
+#### 2. Applications Stuck in "Unknown" State
 
-### Resource Constraints
-- Ensure k3s has sufficient resources
-- Adjust resource limits in custom-values.yaml
+```bash
+# Force refresh
+make update
 
-## 📚 Documentation
+# Or manually sync
+make sync-apps
+```
 
-- [Setup Guide](SETUP_GUIDE.md) - Detailed installation steps
-- [Architecture](docs/architecture.md) - Technical architecture
-- [Team Onboarding](docs/team-onboarding.md) - How to onboard teams
-- [Troubleshooting](docs/troubleshooting.md) - Common issues
+#### 3. Backstage Not Deploying
 
-## 🤝 Support
+Backstage requires PostgreSQL. Deploy standalone instance:
 
-- GitHub Issues: Report bugs or request features
-- Documentation: Check the docs/ directory
-- Logs: Use `kubectl logs` for debugging
+```bash
+make dev-postgres
+```
 
-## 📄 License
+#### 4. Port Forwarding Stops
 
-This setup is based on the open-source Kubrix project. See their repository for licensing information.
+```bash
+# Restart port forwards
+make restart-forward
+
+# Or use the helper
+./kubrix-access.sh restart
+```
+
+### Debug Commands
+
+```bash
+# Debug specific application
+make debug-app APP=sx-backstage
+
+# Check logs
+make logs
+
+# View all CRDs
+make check-crds
+
+# Test ingress endpoints
+make test-ingress
+```
+
+## 📦 Managing Applications
+
+### Using ArgoCD UI
+
+1. Access ArgoCD: http://localhost:8080
+2. View application status and history
+3. Manually sync or rollback applications
+4. Configure auto-sync policies
+
+### Using CLI
+
+```bash
+# Sync all applications
+make sync-apps
+
+# Update specific application
+kubectl annotate application <app-name> -n argocd \
+  argocd.argoproj.io/refresh=true --overwrite
+
+# Delete application
+kubectl delete application <app-name> -n argocd
+```
+
+### Application Sync Waves
+
+Applications deploy in waves to handle dependencies:
+
+- **Wave -10 to -1**: Core infrastructure (ArgoCD, cert-manager)
+- **Wave 0-5**: Platform services (Vault, PostgreSQL, Keycloak)
+- **Wave 6-10**: Application layer (Backstage, monitoring)
+- **Wave 11+**: Additional tools and user applications
+
+## 💻 Development Guide
+
+### Local Development
+
+```bash
+# Port forward for development
+kubectl port-forward svc/postgres -n postgres 5432:5432
+kubectl port-forward svc/vault -n kubrix-vault 8200:8200
+
+# Watch application logs
+kubectl logs -f deployment/<app> -n <namespace>
+```
+
+### Adding Custom Applications
+
+1. Create Helm chart in `platform-apps/charts/`
+2. Add ArgoCD application manifest
+3. Configure appropriate sync wave
+4. Test locally before committing
+
+### Testing Changes
+
+```bash
+# Dry run with Helm
+helm template . -f values-demo-stack.yaml
+
+# Test with ArgoCD
+argocd app diff <app-name>
+```
+
+## 💾 Backup and Recovery
+
+### Backup
+
+```bash
+# Backup all configurations
+make backup
+
+# Backup specific namespace
+kubectl get all -n <namespace> -o yaml > backup-<namespace>.yaml
+```
+
+### Restore
+
+```bash
+# Restore from backup
+make restore BACKUP_DATE=20240119-140523
+
+# Restore specific application
+kubectl apply -f backups/applications-<date>.yaml
+```
+
+## ⚠️ Known Issues
+
+### k3s Specific
+
+1. **LoadBalancer Services**: No external IP assigned in VM setup
+   - **Solution**: Use NodePort or port-forwarding
+
+2. **k8s-monitoring**: Requires cluster name configuration
+   - **Solution**: Monitoring CRDs installed manually
+
+3. **Ingress Webhook**: TLS certificate validation issues
+   - **Solution**: Webhook removed, ingresses work without validation
+
+### Platform Issues
+
+1. **Backstage**: Requires CNPG CRDs or external PostgreSQL
+2. **Vault**: Needs initialization after deployment
+3. **Keycloak**: Requires database configuration
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+### Development Workflow
+
+```bash
+# Create feature branch
+git checkout -b feature/my-feature
+
+# Make changes and test
+make install
+make status
+
+# Commit and push
+git add -A
+git commit -m "Add my feature"
+git push origin feature/my-feature
+```
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- [Kubrix Platform](https://github.com/suxess-it/kubriX) - Original platform
+- [k3s](https://k3s.io/) - Lightweight Kubernetes
+- [ArgoCD](https://argoproj.github.io/cd/) - GitOps engine
+- [Backstage](https://backstage.io/) - Developer portal platform
+
+## 📞 Support
+
+For issues and questions:
+- Check the [Troubleshooting](#troubleshooting) section
+- Review [Known Issues](#known-issues)
+- Open an issue on GitHub
+- Check ArgoCD UI for application-specific errors
+
+---
+
+Made with ❤️ for the Kubrix community
