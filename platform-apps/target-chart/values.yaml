@@ -1,0 +1,6 @@
+default:
+  repoURL: https://github.com/suxess-it/kubriX
+  targetRevision: main
+  valueFiles: []
+kubriXPlan: oss
+applications: ~

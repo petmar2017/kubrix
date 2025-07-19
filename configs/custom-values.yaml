@@ -1,0 +1,56 @@
+# Custom values for Kubrix full IDP deployment
+global:
+  domain: kubrix.local
+  dnsProvider: local
+  
+# Enable all platform components
+platformComponents:
+  argocd:
+    enabled: true
+    ingress:
+      enabled: true
+      hostname: argocd.kubrix.local
+  
+  backstage:
+    enabled: true
+    ingress:
+      enabled: true
+      hostname: backstage.kubrix.local
+  
+  keycloak:
+    enabled: true
+    ingress:
+      enabled: true
+      hostname: keycloak.kubrix.local
+  
+  kargo:
+    enabled: true
+    ingress:
+      enabled: true
+      hostname: kargo.kubrix.local
+  
+  vault:
+    enabled: true
+    ingress:
+      enabled: true
+      hostname: vault.kubrix.local
+  
+  monitoring:
+    enabled: true
+    prometheus:
+      ingress:
+        enabled: true
+        hostname: prometheus.kubrix.local
+    grafana:
+      ingress:
+        enabled: true
+        hostname: grafana.kubrix.local
+
+# Resource limits for k3s
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

@@ -128,7 +128,8 @@ setup_dns() {
         echo "$NODE_IP prometheus.$KUBRIX_CUSTOMER_DOMAIN"
         echo ""
         
-        read -p "Press enter to continue once you've added the entries..."
+        echo "Note: Remember to add these entries to /etc/hosts for domain access"
+        echo "Continuing with bootstrap..."
     else
         create_external_dns_secret
     fi
@@ -346,7 +347,7 @@ main() {
     echo "  - Monitoring Stack (Prometheus/Grafana)"
     echo "  - And more..."
     echo ""
-    read -p "Press enter to continue..."
+    echo "Starting bootstrap process..."
     
     run_bootstrap
     post_install_setup

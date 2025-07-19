@@ -1,0 +1,62 @@
+{{- range .Values.applications }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: sx-{{ .name }}
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: {{ $.Values.default.repoURL }}
+    targetRevision: {{ $.Values.default.targetRevision }}
+    path: platform-apps/charts/{{ .name }}
+    helm:
+      {{- with .helmOptions }}
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+      valueFiles:
+        {{- toYaml $.Values.default.valueFiles | nindent 6}}
+        {{- with .valueFiles }}
+        {{- toYaml . | nindent 6}}
+        {{- end }}
+      ignoreMissingValueFiles: true
+      parameters:
+        - name: kubriXPlan
+          value: {{ $.Values.kubriXPlan }}
+        - name: default.repoURL
+          value: {{ $.Values.default.repoURL }}
+        - name: default.targetRevision
+          value: {{ $.Values.default.targetRevision }}
+  destination:
+    {{- if .destinationNamespaceOverwrite }}
+    namespace: {{ .destinationNamespaceOverwrite }}
+    {{- else }}
+    namespace: {{ .name }}
+    {{- end }}
+    server: 'https://kubernetes.default.svc'
+  syncPolicy:
+    {{- if or .namespaceResourceTracking (not (hasKey . "namespaceResourceTracking")) }}
+    managedNamespaceMetadata:
+      annotations:
+        argocd.argoproj.io/tracking-id: sx-{{ .name }}:app/Namespace:{{ .name }}/{{ .name }}
+    {{- end }}
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      {{- with .syncOptions }}
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+    {{- with .ignoreDifferences }}
+  ignoreDifferences:
+        {{- toYaml . | nindent 4 }}
+    {{- end }}
+---
+{{- end }}
