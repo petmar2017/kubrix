@@ -217,6 +217,38 @@ debug-app: ## Debug specific application (specify APP=app-name)
 	@echo "$(YELLOW)=== Debugging $(APP) ===$(NC)"
 	@kubectl describe application $(APP) -n argocd
 	@echo ""
+
+# Backstage specific targets
+backstage-status: ## Check Backstage deployment status
+	@echo "$(YELLOW)=== Backstage Status ===$(NC)"
+	@kubectl get pods -n backstage
+	@echo ""
+	@echo "$(YELLOW)Backstage Services:$(NC)"
+	@kubectl get svc -n backstage
+	@echo ""
+	@echo "$(YELLOW)Backstage Ingress:$(NC)"
+	@kubectl get ingress -n backstage
+	@echo ""
+
+backstage-logs: ## Show Backstage logs
+	@kubectl logs -n backstage -l app=backstage --tail=50
+
+backstage-db-logs: ## Show Backstage PostgreSQL logs
+	@kubectl logs -n backstage -l app.kubernetes.io/name=postgresql --tail=50
+
+backstage-test: ## Test Backstage API endpoints
+	@echo "$(YELLOW)Testing Backstage endpoints...$(NC)"
+	@echo -n "Homepage: "
+	@curl -s -o /dev/null -w "%{http_code}\n" -H "Host: backstage.kubrix.local" http://localhost:8880 || echo "Failed"
+	@echo -n "API Health: "
+	@curl -s -o /dev/null -w "%{http_code}\n" -H "Host: backstage.kubrix.local" http://localhost:8880/api/catalog/entities || echo "Failed"
+	@echo ""
+
+backstage-open: ## Open Backstage in browser (requires Host header)
+	@echo "$(YELLOW)Opening Backstage...$(NC)"
+	@echo "Note: You need a browser extension to set Host header"
+	@echo "Or access the service dashboard at: http://localhost:8880"
+	@open http://localhost:8880
 	@echo "$(YELLOW)=== Recent Events ===$(NC)"
 	@kubectl get events -n argocd --field-selector involvedObject.name=$(APP) --sort-by='.lastTimestamp' | tail -10
 

@@ -5,6 +5,29 @@ All notable changes to the Kubrix k3s deployment will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-07-19
+
+### Added
+- Full Backstage deployment with PostgreSQL backend using Helm chart
+- Default backend service for ingress (shows service dashboard)
+- Browser extension configuration for Host header management
+- Comprehensive access solutions documentation (ACCESS_SOLUTIONS.md)
+- Backstage setup guide (BACKSTAGE_SETUP.md)
+- HTML service dashboard (kubrix-services.html)
+- Browser access enablement script
+- CNPG operator installation (partial - missing Pooler CRD)
+
+### Fixed
+- localhost:8880 404 error - now shows helpful service dashboard
+- Backstage deployment - fully operational with database
+- Ingress routing with proper Host header handling
+- Service access documentation with multiple methods
+
+### Changed
+- Backstage status from "placeholder" to "fully operational"
+- Updated documentation to reflect working Backstage
+- Enhanced Makefile with additional troubleshooting commands
+
 ## [1.0.0] - 2025-07-19
 
 ### Added
@@ -37,10 +60,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Services Status
 - ✅ ArgoCD: Fully operational
 - ✅ Grafana: Fully operational
+- ✅ Backstage: Fully operational with PostgreSQL
 - ✅ Ingress: Working via NodePort
 - ✅ Cert-manager: Active
 - ✅ Kyverno: Active
-- ⚠️ Backstage: Placeholder page only
 - ⚠️ Keycloak: Deployed but needs configuration
 - ⚠️ Vault: Deployed but needs initialization
 - ⚠️ Monitoring: CRDs only, no operator

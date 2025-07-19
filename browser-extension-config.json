@@ -1,0 +1,48 @@
+{
+  "name": "Kubrix Host Header Helper",
+  "description": "Configuration for browser extensions like ModHeader to access Kubrix services",
+  "profiles": [
+    {
+      "name": "Kubrix Local Development",
+      "enabled": true,
+      "rules": [
+        {
+          "url": "http://localhost:8880/*",
+          "headers": [
+            {
+              "name": "Host",
+              "value": "backstage.kubrix.local",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "url": "http://localhost:8080/*",
+          "headers": [
+            {
+              "name": "Host", 
+              "value": "argocd.kubrix.local",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "url": "http://localhost:3000/*",
+          "headers": [
+            {
+              "name": "Host",
+              "value": "grafana.kubrix.local",
+              "enabled": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "instructions": {
+    "chrome": "Install ModHeader extension from Chrome Web Store and import this configuration",
+    "firefox": "Install Modify Header Value extension and configure rules manually",
+    "safari": "Use Proxyman or similar tool to modify headers",
+    "alternative": "Access services directly at http://localhost:8880 to see the service dashboard"
+  }
+}

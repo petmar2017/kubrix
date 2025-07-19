@@ -207,9 +207,10 @@ make dev-monitoring-crds
 make port-forward
 
 # Access services
-# ArgoCD:  http://localhost:8080
-# Grafana: http://localhost:3000
-# Ingress: http://localhost:8880
+# ArgoCD:   http://localhost:8080
+# Grafana:  http://localhost:3000
+# Backstage: http://localhost:8880 (requires Host header: backstage.kubrix.local)
+# Dashboard: http://localhost:8880 (service dashboard)
 ```
 
 ### Direct Access via NodePort
@@ -218,16 +219,18 @@ make port-forward
 # Access through NodePort 30404
 curl -H "Host: argocd.kubrix.local" http://192.168.64.4:30404
 curl -H "Host: grafana.kubrix.local" http://192.168.64.4:30404
+curl -H "Host: backstage.kubrix.local" http://192.168.64.4:30404
 ```
 
 ### Using the Helper Script
 
 ```bash
 # Quick access helper
-./kubrix-access.sh open argocd   # Opens ArgoCD in browser
-./kubrix-access.sh open grafana  # Opens Grafana in browser
-./kubrix-access.sh status        # Check port-forward status
-./kubrix-access.sh restart       # Restart all port-forwards
+./kubrix-access.sh open argocd     # Opens ArgoCD in browser
+./kubrix-access.sh open grafana    # Opens Grafana in browser
+./kubrix-access.sh open backstage  # Opens Backstage in browser
+./kubrix-access.sh status          # Check port-forward status
+./kubrix-access.sh restart         # Restart all port-forwards
 ```
 
 ### Service Credentials

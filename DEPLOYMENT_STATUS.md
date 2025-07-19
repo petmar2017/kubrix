@@ -6,22 +6,22 @@
 
 ## 🚀 Deployment Summary
 
-### ✅ Successfully Deployed (9 applications)
+### ✅ Successfully Deployed (10 applications)
 - **ArgoCD** - GitOps engine (fully operational)
 - **Grafana** - Monitoring dashboards (accessible)
+- **Backstage** - Developer portal (fully operational with PostgreSQL)
 - **Cert-manager** - Certificate management
 - **Crossplane** - Infrastructure as Code
 - **External Secrets** - Secret synchronization
 - **Kyverno** - Policy engine
 - **Ingress NGINX** - Ingress controller
 - **Loki** - Log aggregation
-- **PostgreSQL** - Database (standalone)
+- **PostgreSQL** - Database (for Backstage)
 
-### ⚠️ Partially Deployed (4 applications)
-- **Backstage** - Placeholder page only (needs CNPG)
+### ⚠️ Partially Deployed (3 applications)
 - **Keycloak** - Deployed but not configured
 - **Vault** - Deployed but not initialized
-- **CNPG** - Application exists but operator not running
+- **CNPG** - Operator partially installed (missing Pooler CRD)
 
 ### ❌ Not Deployed (6 applications)
 - **k8s-monitoring** - Cluster name configuration issue
@@ -38,7 +38,7 @@
 |---------|--------------|--------|
 | ArgoCD | http://localhost:8080 | ✅ Fully operational |
 | Grafana | http://localhost:3000 | ✅ Fully operational |
-| Backstage | http://localhost:8880 (Host: backstage.kubrix.local) | ⚠️ Placeholder only |
+| Backstage | http://localhost:8880 (Host: backstage.kubrix.local) | ✅ Fully operational |
 
 ### Credentials
 - **ArgoCD**: admin / aFsfe93a-OgZSpby

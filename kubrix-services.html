@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kubrix Services - Local Access</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        h1 { color: #333; margin: 0 0 10px 0; }
+        .subtitle { color: #666; }
+        .services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .service {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .service:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .service h2 { 
+            margin: 0 0 10px 0; 
+            color: #007bff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .status {
+            font-size: 14px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: normal;
+        }
+        .active { background: #d4edda; color: #155724; }
+        .placeholder { background: #fff3cd; color: #856404; }
+        .notready { background: #f8d7da; color: #721c24; }
+        .service p { margin: 10px 0; color: #666; }
+        .service a {
+            display: inline-block;
+            margin: 10px 10px 0 0;
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .service a:hover { background: #0056b3; }
+        .service code {
+            display: block;
+            background: #f1f3f4;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+        .note {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            color: #1565c0;
+        }
+        .troubleshoot {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Kubrix Platform Services</h1>
+        <p class="subtitle">Local access to your Kubernetes Internal Developer Platform</p>
+    </div>
+
+    <div class="services">
+        <div class="service">
+            <h2>ArgoCD <span class="status active">Active</span></h2>
+            <p>GitOps continuous deployment platform for managing Kubernetes applications</p>
+            <a href="http://localhost:8080" target="_blank">Open ArgoCD</a>
+            <code>Username: admin<br>Password: aFsfe93a-OgZSpby</code>
+        </div>
+
+        <div class="service">
+            <h2>Grafana <span class="status active">Active</span></h2>
+            <p>Monitoring and observability platform with pre-configured dashboards</p>
+            <a href="http://localhost:3000" target="_blank">Open Grafana</a>
+            <code>Username: admin<br>Password: (check pod logs)</code>
+        </div>
+
+        <div class="service">
+            <h2>Backstage <span class="status active">Active</span></h2>
+            <p>Developer portal for service catalog and documentation (fully operational)</p>
+            <a href="http://backstage.kubrix.local:8880" target="_blank">Open Backstage</a>
+            <code>curl -H "Host: backstage.kubrix.local" http://localhost:8880</code>
+            <p style="font-size: 14px; color: #666;">✅ Full Backstage with PostgreSQL backend</p>
+        </div>
+
+        <div class="service">
+            <h2>Keycloak <span class="status notready">Not Ready</span></h2>
+            <p>Identity and access management for single sign-on (SSO)</p>
+            <code>Status: Deployed but needs configuration</code>
+        </div>
+
+        <div class="service">
+            <h2>Vault <span class="status notready">Not Ready</span></h2>
+            <p>Secrets management for secure credential storage</p>
+            <code>Status: Deployed but needs initialization</code>
+        </div>
+
+        <div class="service">
+            <h2>Kargo <span class="status notready">Not Ready</span></h2>
+            <p>Progressive delivery for multi-stage deployments</p>
+            <code>Status: Not yet deployed</code>
+        </div>
+    </div>
+
+    <div class="note">
+        <h3>ℹ️ Access Information</h3>
+        <p>Services are accessed through kubectl port-forwarding. If a service is not accessible:</p>
+        <ol>
+            <li>Check if port-forwarding is active: <code>ps aux | grep port-forward</code></li>
+            <li>Restart port-forwarding: <code>make port-forward</code></li>
+            <li>For ingress-based access, use: <code>curl -H "Host: service.kubrix.local" http://localhost:8880</code></li>
+        </ol>
+    </div>
+
+    <div class="troubleshoot">
+        <h3>🔧 Troubleshooting localhost:8880</h3>
+        <p>When accessing localhost:8880 directly, you get a 404 because the ingress controller needs the correct Host header.</p>
+        <p><strong>Solutions:</strong></p>
+        <ol>
+            <li>Use the direct service URLs (localhost:8080 for ArgoCD, localhost:3000 for Grafana)</li>
+            <li>Access via NodePort: http://192.168.64.4:30404</li>
+            <li>Use curl with Host header: <code>curl -H "Host: backstage.kubrix.local" http://localhost:8880</code></li>
+        </ol>
+    </div>
+
+    <script>
+        // Auto-refresh service status
+        function checkService(url, elementId) {
+            fetch(url, { mode: 'no-cors' })
+                .then(() => {
+                    document.getElementById(elementId).textContent = '✓';
+                })
+                .catch(() => {
+                    document.getElementById(elementId).textContent = '✗';
+                });
+        }
+
+        // Check services on load
+        window.onload = function() {
+            checkService('http://localhost:8080', 'argocd-status');
+            checkService('http://localhost:3000', 'grafana-status');
+        };
+    </script>
+</body>
+</html>
