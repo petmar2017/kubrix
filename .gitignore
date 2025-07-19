@@ -1,0 +1,54 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Credentials and secrets
+credentials.txt
+*.key
+*.pem
+*.crt
+secrets/
+vault-keys.json
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
+logs/
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+
+# Helm
+charts/*.tgz
+requirements.lock
+
+# Build artifacts
+dist/
+build/
+*.tar.gz
+
+# Platform specific
+platform-apps/**/charts/
+team-apps/**/charts/
+
+# Backup files
+backups/
+*.backup
