@@ -1,0 +1,8 @@
+# Kubrix IDP Services
+192.168.64.4 argocd.kubrix.local
+192.168.64.4 backstage.kubrix.local
+192.168.64.4 keycloak.kubrix.local
+192.168.64.4 kargo.kubrix.local
+192.168.64.4 vault.kubrix.local
+192.168.64.4 grafana.kubrix.local
+192.168.64.4 prometheus.kubrix.local
