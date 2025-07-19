@@ -1,0 +1,285 @@
+---
+# PostgreSQL for Backstage
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backstage-postgres-secret
+  namespace: backstage
+type: Opaque
+stringData:
+  POSTGRES_USER: backstage
+  POSTGRES_PASSWORD: backstagepassword123
+  POSTGRES_DB: backstage
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backstage-postgres-pvc
+  namespace: backstage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backstage-postgres
+  namespace: backstage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backstage-postgres
+  template:
+    metadata:
+      labels:
+        app: backstage-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+        envFrom:
+        - secretRef:
+            name: backstage-postgres-secret
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+          subPath: postgres
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: backstage-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backstage-postgres
+  namespace: backstage
+spec:
+  selector:
+    app: backstage-postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+---
+# Backstage Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backstage-app-config
+  namespace: backstage
+data:
+  app-config.yaml: |
+    app:
+      title: Kubrix Backstage
+      baseUrl: http://backstage.kubrix.local
+
+    organization:
+      name: Kubrix Platform
+
+    backend:
+      baseUrl: http://backstage.kubrix.local
+      listen:
+        port: 7007
+      csp:
+        connect-src: ["'self'", 'http:', 'https:']
+      cors:
+        origin: http://backstage.kubrix.local
+        methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+        credentials: true
+      database:
+        client: pg
+        connection:
+          host: backstage-postgres
+          port: 5432
+          user: backstage
+          password: backstagepassword123
+          database: backstage
+
+    integrations:
+      github:
+        - host: github.com
+          token: ${GITHUB_TOKEN}
+
+    proxy:
+      '/test':
+        target: 'https://example.com'
+        changeOrigin: true
+
+    techdocs:
+      builder: 'local'
+      generator:
+        runIn: 'local'
+      publisher:
+        type: 'local'
+
+    auth:
+      providers: {}
+
+    scaffolder:
+      defaultAuthor:
+        name: Kubrix
+        email: info@example.com
+
+    catalog:
+      import:
+        entityFilename: catalog-info.yaml
+        pullRequestBranchName: backstage-integration
+      rules:
+        - allow: [Component, System, API, Resource, Location]
+      locations:
+        - type: file
+          target: /app/catalog/all.yaml
+
+    kubernetes:
+      serviceLocatorMethod:
+        type: 'multiTenant'
+      clusterLocatorMethods:
+        - type: 'config'
+          clusters:
+            - url: https://kubernetes.default.svc
+              name: local
+              authProvider: 'serviceAccount'
+              skipTLSVerify: true
+              serviceAccountToken: ${KUBE_TOKEN}
+---
+# Backstage Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backstage
+  namespace: backstage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backstage
+  template:
+    metadata:
+      labels:
+        app: backstage
+    spec:
+      serviceAccountName: backstage
+      containers:
+      - name: backstage
+        image: backstage/backstage:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 7007
+        env:
+        - name: POSTGRES_HOST
+          value: backstage-postgres
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: backstage-postgres-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backstage-postgres-secret
+              key: POSTGRES_PASSWORD
+        - name: KUBE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: backstage-sa-token
+              key: token
+        volumeMounts:
+        - name: app-config
+          mountPath: /app/app-config.yaml
+          subPath: app-config.yaml
+          readOnly: true
+      volumes:
+      - name: app-config
+        configMap:
+          name: backstage-app-config
+---
+# Service Account for Backstage
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backstage
+  namespace: backstage
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: backstage-read
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - configmaps
+  - secrets
+  - namespaces
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - cronjobs
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: backstage-read-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: backstage-read
+subjects:
+- kind: ServiceAccount
+  name: backstage
+  namespace: backstage
+---
+# Create token secret manually
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backstage-sa-token
+  namespace: backstage
+  annotations:
+    kubernetes.io/service-account.name: backstage
+type: kubernetes.io/service-account-token
+---
+# Update the service to point to the real Backstage
+apiVersion: v1
+kind: Service
+metadata:
+  name: backstage
+  namespace: backstage
+spec:
+  selector:
+    app: backstage
+  ports:
+  - name: http
+    port: 80
+    targetPort: 7007

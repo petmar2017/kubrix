@@ -5,6 +5,28 @@ All notable changes to the Kubrix k3s deployment will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-07-19
+
+### Added
+- K8s manifests directory structure for organized configuration management
+- Backstage troubleshooting documentation (docs/BACKSTAGE_TROUBLESHOOTING.md)
+- Scripts directory with automated fixes and updates
+- New Makefile targets:
+  - `backstage-fix-url` - Fix Backstage URL access issues
+  - `update-default-backend` - Update ingress default backend
+  - `apply-backstage-helm` - Deploy Backstage with custom values
+  - `apply-manifests` - Apply all custom K8s manifests
+  - `list-manifests` - List all custom manifests
+
+### Changed
+- Moved all temporary files to organized repository structure
+- Updated default backend to show Backstage as fully operational
+- Improved Backstage access documentation with troubleshooting steps
+
+### Fixed
+- Backstage blank page issue documentation
+- Default backend dashboard now correctly shows service status
+
 ## [1.1.0] - 2025-07-19
 
 ### Added

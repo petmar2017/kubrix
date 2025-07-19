@@ -416,6 +416,27 @@ make restore BACKUP_DATE=20240119-140523
 kubectl apply -f backups/applications-<date>.yaml
 ```
 
+## 🛠️ Custom Manifests
+
+### Apply Custom Configurations
+
+```bash
+# Apply all custom manifests
+make apply-manifests
+
+# List all available manifests
+make list-manifests
+
+# Apply specific manifest
+kubectl apply -f k8s-manifests/ingress/default-backend.yaml
+```
+
+### Available Manifests
+
+- **Ingress Default Backend**: Service dashboard for easy access
+- **Backstage Helm Values**: Custom configuration for Backstage
+- **Standalone PostgreSQL**: Alternative to CNPG for Backstage
+
 ## ⚠️ Known Issues
 
 ### k3s Specific
@@ -434,6 +455,32 @@ kubectl apply -f backups/applications-<date>.yaml
 1. **Backstage**: Requires CNPG CRDs or external PostgreSQL
 2. **Vault**: Needs initialization after deployment
 3. **Keycloak**: Requires database configuration
+
+## 📁 Repository Structure
+
+```
+kubrix/
+├── k8s-manifests/          # Kubernetes manifests
+│   ├── backstage/          # Backstage deployment files
+│   │   ├── backstage-values.yaml
+│   │   ├── backstage-full.yaml
+│   │   └── postgres-standalone.yaml
+│   ├── ingress/            # Ingress configurations
+│   │   └── default-backend.yaml
+│   └── monitoring/         # Monitoring stack configs
+├── scripts/                # Utility scripts
+│   ├── fix-backstage-url.sh
+│   ├── update-default-backend.sh
+│   └── enable-browser-access.sh
+├── docs/                   # Documentation
+│   └── BACKSTAGE_TROUBLESHOOTING.md
+├── Makefile               # Automation commands
+├── README.md              # This file
+├── CHANGELOG.md           # Version history
+├── DEPLOYMENT_STATUS.md   # Current deployment status
+├── ACCESS_SOLUTIONS.md    # Service access guide
+└── BACKSTAGE_SETUP.md     # Backstage setup guide
+```
 
 ## 🤝 Contributing
 

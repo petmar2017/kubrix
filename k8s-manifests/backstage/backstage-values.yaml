@@ -1,0 +1,78 @@
+upstream:
+  backstage:
+    image:
+      repository: backstage/backstage
+      tag: latest
+    appConfig:
+      app:
+        title: Kubrix Backstage
+        baseUrl: http://backstage.kubrix.local
+      
+      organization:
+        name: Kubrix Platform
+      
+      backend:
+        baseUrl: http://backstage.kubrix.local
+        listen:
+          port: 7007
+        csp:
+          connect-src: ["'self'", 'http:', 'https:']
+        cors:
+          origin: http://backstage.kubrix.local
+          methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+          credentials: true
+        database:
+          client: pg
+          connection:
+            host: "{{ include \"backstage.postgresql.host\" . }}"
+            port: 5432
+            user: backstage
+            password: backstagepass123
+      
+      auth:
+        providers: {}
+      
+      scaffolder:
+        defaultAuthor:
+          name: Kubrix
+          email: info@example.com
+      
+      catalog:
+        import:
+          entityFilename: catalog-info.yaml
+          pullRequestBranchName: backstage-integration
+        rules:
+          - allow: [Component, System, API, Resource, Location]
+        locations:
+          - type: url
+            target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
+      
+      techdocs:
+        builder: 'local'
+        generator:
+          runIn: 'local'
+        publisher:
+          type: 'local'
+
+    postgresql:
+      enabled: true
+      auth:
+        username: backstage
+        password: backstagepass123
+        database: backstage
+
+ingress:
+  enabled: true
+  className: nginx
+  host: backstage.kubrix.local
+
+postgresql:
+  enabled: true
+  auth:
+    username: backstage
+    password: backstagepass123
+    database: backstage
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi

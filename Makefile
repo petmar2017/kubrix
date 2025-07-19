@@ -249,8 +249,32 @@ backstage-open: ## Open Backstage in browser (requires Host header)
 	@echo "Note: You need a browser extension to set Host header"
 	@echo "Or access the service dashboard at: http://localhost:8880"
 	@open http://localhost:8880
+
+backstage-fix-url: ## Fix Backstage URL access issues
+	@./scripts/fix-backstage-url.sh
+
+update-default-backend: ## Update ingress default backend dashboard
+	@cd scripts && ./update-default-backend.sh
+
+apply-backstage-helm: ## Deploy Backstage using Helm with custom values
+	@echo "$(YELLOW)Deploying Backstage with Helm...$(NC)"
+	@helm upgrade --install backstage backstage/backstage \
+		-n backstage --create-namespace \
+		-f k8s-manifests/backstage/backstage-values.yaml \
+		--wait --timeout=5m
+	@echo "$(GREEN)✅ Backstage deployed successfully$(NC)"
 	@echo "$(YELLOW)=== Recent Events ===$(NC)"
 	@kubectl get events -n argocd --field-selector involvedObject.name=$(APP) --sort-by='.lastTimestamp' | tail -10
+
+# K8s Manifests Management
+apply-manifests: ## Apply all custom K8s manifests
+	@echo "$(YELLOW)Applying custom manifests...$(NC)"
+	@kubectl apply -f k8s-manifests/ingress/default-backend.yaml || true
+	@echo "$(GREEN)✅ Manifests applied$(NC)"
+
+list-manifests: ## List all custom K8s manifests
+	@echo "$(YELLOW)Custom K8s Manifests:$(NC)"
+	@find k8s-manifests -name "*.yaml" -type f | sort
 
 check-crds: ## Check installed CRDs
 	@echo "$(YELLOW)Installed CRDs:$(NC)"
