@@ -174,10 +174,26 @@ open-grafana: ## Open Grafana in browser
 
 test-ingress: ## Test ingress connectivity
 	@echo "$(YELLOW)Testing ingress endpoints...$(NC)"
-	@for domain in argocd grafana keycloak vault kargo; do \
+	@for domain in argocd grafana backstage keycloak vault kargo; do \
 		printf "%-20s " "$$domain.$(KUBRIX_DOMAIN):"; \
 		curl -s -o /dev/null -w "%{http_code}\n" -H "Host: $$domain.$(KUBRIX_DOMAIN)" http://localhost:8880 2>/dev/null || echo "Failed"; \
 	done
+
+health-check: ## Check health of all services
+	@echo "$(GREEN)=== Kubrix Service Health Check ===$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Core Services:$(NC)"
+	@kubectl get pods -n argocd | grep -E "(NAME|Running)" || echo "  ArgoCD: Not running"
+	@kubectl get pods -n grafana | grep -E "(NAME|Running)" || echo "  Grafana: Not running"
+	@kubectl get pods -n backstage | grep -E "(NAME|Running)" || echo "  Backstage: Not running"
+	@echo ""
+	@echo "$(YELLOW)Application Status:$(NC)"
+	@kubectl get applications -n argocd | grep -E "(NAME|Synced.*Healthy)" | head -10
+	@echo ""
+	@echo "$(YELLOW)Ingress Status:$(NC)"
+	@kubectl get ingress -A --no-headers | wc -l | xargs printf "  Total ingresses: %s\n"
+	@echo ""
+	@echo "Run 'make test-ingress' to test connectivity"
 
 fix-hosts: ## Update /etc/hosts file
 	@echo "$(YELLOW)Updating /etc/hosts...$(NC)"

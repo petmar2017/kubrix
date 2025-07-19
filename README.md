@@ -82,15 +82,16 @@ graph TB
 | Component | Purpose | Version | Status |
 |-----------|---------|---------|--------|
 | ArgoCD | GitOps continuous deployment | v2.8.4 | ✅ Active |
-| Backstage | Developer portal | Latest | ⚠️ Requires config |
+| Backstage | Developer portal | Latest | ⚠️ Placeholder only |
 | Grafana | Monitoring dashboards | Latest | ✅ Active |
-| Keycloak | Single Sign-On (SSO) | Latest | 🔄 Deploying |
-| Vault | Secrets management | Latest | 🔄 Deploying |
-| Kargo | Progressive delivery | Latest | 🔄 Deploying |
+| Keycloak | Single Sign-On (SSO) | Latest | ⚠️ Needs config |
+| Vault | Secrets management | Latest | ⚠️ Needs init |
+| Kargo | Progressive delivery | Latest | ⚠️ Not deployed |
 | Prometheus | Metrics collection | Latest | ⚠️ CRDs only |
-| Loki | Log aggregation | Latest | 🔄 Deploying |
+| Loki | Log aggregation | Latest | ✅ Active |
 | cert-manager | Certificate management | Latest | ✅ Active |
 | Kyverno | Policy engine | Latest | ✅ Active |
+| Ingress NGINX | Ingress controller | Latest | ✅ Active |
 
 ## 📚 Prerequisites
 
@@ -235,7 +236,8 @@ curl -H "Host: grafana.kubrix.local" http://192.168.64.4:30404
 |---------|----------|----------|-----|
 | ArgoCD | admin | aFsfe93a-OgZSpby | http://localhost:8080 |
 | Grafana | admin | (check pod logs) | http://localhost:3000 |
-| Keycloak | admin | (when deployed) | http://localhost:8081 |
+| Backstage | - | - | http://localhost:8880 (Host: backstage.kubrix.local) |
+| Keycloak | admin | (when deployed) | Not yet available |
 
 ## ⚙️ Configuration
 
